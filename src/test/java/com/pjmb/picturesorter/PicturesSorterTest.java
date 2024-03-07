@@ -1,12 +1,10 @@
 package com.pjmb.picturesorter;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -16,14 +14,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PicturesSorterTest {
 
 
-    private String folderPath = "src/test/resources/img/";
+    private static String folderPath = "src/test/resources/img/";
 
     @BeforeAll
     static void setup() {
+        // TODO
+        // PUT BACK FILES
     }
 
-    @AfterAll
-    static void cleanup() {
+    @AfterEach
+    void cleanup(TestInfo info) {
+        if(!info.getTags().contains("cleanup")) return;
+        if(Files.exists(Paths.get(folderPath + "portrait/portrait.jpg"))) {
+            new File(folderPath + "portrait/portrait.jpg").renameTo(new File(folderPath + "portrait.jpg"));
+            new File(folderPath + "portrait/").delete();
+        }
+       if(Files.exists(Paths.get(folderPath + "landscape/landscape.jpg"))) {
+           new File(folderPath + "landscape/landscape.jpg").renameTo(new File(folderPath + "landscape.jpg"));
+           new File(folderPath + "landscape/").delete();
+       }
     }
 
     @Test
@@ -43,9 +52,12 @@ class PicturesSorterTest {
     }
 
     @Test
+    @Tag("cleanup")
     public void testSortingPictures() {
         PicturesSorter.sortPicturesInFolder(folderPath);
-
+        assertTrue(Files.exists(Paths.get(folderPath + "portrait/portrait.jpg")));
+        assertTrue(Files.exists(Paths.get(folderPath + "landscape/landscape.jpg")));
+        assertTrue(Files.exists(Paths.get(folderPath + "file.txt")));
     }
 
 }

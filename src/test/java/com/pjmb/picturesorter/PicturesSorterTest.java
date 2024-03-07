@@ -16,12 +16,6 @@ class PicturesSorterTest {
 
     private static String folderPath = "src/test/resources/img/";
 
-    @BeforeAll
-    static void setup() {
-        // TODO
-        // PUT BACK FILES
-    }
-
     @AfterEach
     void cleanup(TestInfo info) {
         if(!info.getTags().contains("cleanup")) return;

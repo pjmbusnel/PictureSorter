@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,7 +69,7 @@ public class PicturesSorter {
 
     private static void movePictureToFolder(File file, String folder) {
         String targetFolder = file.getPath().substring(0,file.getPath().lastIndexOf(file.getName())) + folder + File.separator;
-        createIfNotExist(targetFolder);
+        createFolderIfNotExist(targetFolder);
         String targetFile = targetFolder + file.getName();
         boolean isMoved = file.renameTo(new File(targetFile));
         if (!isMoved) {
@@ -74,8 +77,43 @@ public class PicturesSorter {
         }
     }
 
-    private static void createIfNotExist(String folder) {
-        if (!Files.exists(Paths.get(folder)))
+    private static boolean isExist(String file) {
+        return Files.exists(Paths.get(file));
+    }
+
+    private static void createFolderIfNotExist(String folder) {
+        if (!isExist(folder))
             new File(folder).mkdirs();
+    }
+
+    public static void renamePicturesInFolder(String folder, String prefix, int indexStart, boolean randomizeOrder) {
+        List<File> pictures = new ArrayList<>();
+        pictures.addAll(listPicturesInFolder(folder));
+        if (randomizeOrder==true)
+            Collections.shuffle(pictures);
+        else
+            Collections.sort(pictures);
+        AtomicInteger i = new AtomicInteger(indexStart);
+        pictures.forEach(p -> {
+            renameFile(p, prefix + i + getExtension(p.getName()));
+            i.getAndIncrement();
+        });
+    }
+
+    private static String getExtension(String name) {
+        return name.substring(name.lastIndexOf("."));
+    }
+
+    private static void renameFile(File fileSource, String newName) {
+        String targetFile = fileSource.getPath().substring(0,fileSource.getPath().length() - fileSource.getName().length()) + newName;
+        boolean isRenamed = false;
+        // TODO need a temporary rename step, to avoid collision/loss
+        boolean isExist = isExist(targetFile);
+        if (!isExist) {
+            isRenamed = fileSource.renameTo(new File(targetFile));
+        }
+        if (!isRenamed || isExist) {
+            System.out.println("Could not rename file to " + targetFile);
+        }
     }
 }
